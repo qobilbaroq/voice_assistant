@@ -1,4 +1,3 @@
-# wake_word_detector.py
 from openwakeword.model import Model
 import numpy as np
 

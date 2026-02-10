@@ -3,11 +3,11 @@ import numpy as np
 import queue
 import time
 import webrtcvad
-from wake_word_detector import WakeWordDetector
-from speech_to_text import SpeechToText
-from llm_handler import LLMHandler
-from text_to_speech import TextToSpeech
-from config import SAMPLE_RATE, CHANNELS
+from voice_assistant.wake_word_detector import WakeWordDetector
+from voice_assistant.speech_to_text import SpeechToText
+from voice_assistant.llm_handler import LLMHandler
+from voice_assistant.text_to_speech import TextToSpeech
+from voice_assistant.config import SAMPLE_RATE, CHANNELS
 
 class VoiceAssistant:
     def __init__(self):

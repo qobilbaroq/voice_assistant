@@ -1,5 +1,5 @@
 import ollama
-from config import OLLAMA_MODEL
+from .config import OLLAMA_MODEL
 
 class LLMHandler:
     def __init__(self):

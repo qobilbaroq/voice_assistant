@@ -1,5 +1,5 @@
 from faster_whisper import WhisperModel
-from config import WHISPER_MODEL, WHISPER_DEVICE
+from .config import WHISPER_MODEL, WHISPER_DEVICE
 import numpy as np
 
 class SpeechToText:

@@ -1,7 +1,7 @@
 import sounddevice as sd
 import numpy as np
 from kokoro_onnx import Kokoro
-from config import KOKORO_MODEL_PATH, KOKORO_VOICES_PATH, KOKORO_VOICE
+from .config import KOKORO_MODEL_PATH, KOKORO_VOICES_PATH, KOKORO_VOICE
 import re
 
 class TextToSpeech:
