@@ -1,4 +1,3 @@
-# main.py
 import sounddevice as sd
 import numpy as np
 import queue
@@ -38,12 +37,12 @@ class VoiceAssistant:
         
         recorded_audio = []
         silence_chunks = 0
-        max_silence_chunks = 25  # ~1.5 detik silence
+        max_silence_chunks = 60  # ~1.5 detik silence
         
         started_speaking = False
         waiting_for_speech = True
         wait_timeout = 0
-        max_wait = 100  # ~6 detik wait untuk user mulai bicara
+        max_wait = 200  # ~6 detik wait untuk user mulai bicara
         
         with sd.InputStream(samplerate=self.sample_rate, 
                            channels=CHANNELS,

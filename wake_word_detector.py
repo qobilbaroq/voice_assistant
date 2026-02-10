@@ -25,7 +25,7 @@ class WakeWordDetector:
             
             # Check if any wake word detected
             for key, value in prediction.items():
-                if key == "hey_jarvis" and value > 0.4:  # Naikan dari 0.5 ke 0.7
+                if key == "hey_jarvis" and value > 0.7:  # Naikan dari 0.5 ke 0.7
                     print(f"✅ Detected: {key} with score {value}")
                     return True
             

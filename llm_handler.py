@@ -1,4 +1,3 @@
-# llm_handler.py
 import ollama
 from config import OLLAMA_MODEL
 
@@ -20,7 +19,7 @@ class LLMHandler:
             messages = [
                 {
                     "role": "system",
-                    "content": "You are a helpful voice assistant. Keep responses concise and conversational, maximum 3-4 sentences. Avoid long explanations unless specifically asked. Never use emojis, emoticons, or any special characters in your responses. Use plain text only."
+                    "content": "You are a helpful voice assistant. Always respond in English language even if the user speaks in other languages. Keep responses concise and conversational, maximum 3-4 sentences. Avoid long explanations unless specifically asked. IMPORTANT: Never use emojis, emoticons, or any special characters (like :, -, *, #, @, etc) in your responses. Use plain text only with simple punctuation (period, comma, question mark)."
                 }
             ] + self.conversation_history
             
