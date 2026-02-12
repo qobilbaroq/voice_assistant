@@ -7,9 +7,10 @@ WAKE_WORD_MODEL = "hey_jarvis, alexa"
 # Whisper Settings
 WHISPER_MODEL = "small"
 WHISPER_DEVICE = "cpu"
+WHISPER_COMPUTE_TYPE = "int8" 
 
 # Ollama Settings
-OLLAMA_MODEL = "gemma2:2b"
+OLLAMA_MODEL = "gemma3:1b"
 OLLAMA_HOST = "http://localhost:11434"
 
 # Audio Settings

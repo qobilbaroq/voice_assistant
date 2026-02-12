@@ -22,6 +22,9 @@ class VoiceAssistant:
         self.sample_rate = SAMPLE_RATE
         self.is_speaking = False
         
+        # Stop commands
+        self.stop_commands = ['stop', 'done', 'berhenti', 'cukup', 'cancel']
+        
         print("Voice Assistant ready!")
         
     def audio_callback(self, indata, frames, time_info, status):
@@ -30,19 +33,27 @@ class VoiceAssistant:
             print(status)
         self.audio_queue.put(indata.copy())
     
+    def is_stop_command(self, text):
+        """Check if text contains stop command"""
+        text_lower = text.lower().strip()
+        for cmd in self.stop_commands:
+            if cmd in text_lower:
+                return True
+        return False
+    
     def listen_for_speech(self, max_duration=10):
         """Record audio until silence detected - WAIT for user to start speaking"""
         print("🎤 Listening... (speak when ready)")
-        vad = webrtcvad.Vad(1)  # Less aggressive
+        vad = webrtcvad.Vad(1)
         
         recorded_audio = []
         silence_chunks = 0
-        max_silence_chunks = 60  # ~1.5 detik silence
+        max_silence_chunks = 60
         
         started_speaking = False
         waiting_for_speech = True
         wait_timeout = 0
-        max_wait = 200  # ~6 detik wait untuk user mulai bicara
+        max_wait = 200
         
         with sd.InputStream(samplerate=self.sample_rate, 
                            channels=CHANNELS,
@@ -51,13 +62,11 @@ class VoiceAssistant:
             for _ in range(int(max_duration * self.sample_rate / 480)):
                 audio_chunk, _ = stream.read(480)
                 
-                # Convert to int16 for VAD
                 audio_int16 = (audio_chunk.flatten() * 32767).astype(np.int16).tobytes()
                 
                 try:
                     is_speech = vad.is_speech(audio_int16, self.sample_rate)
                     
-                    # Waiting for user to start speaking
                     if waiting_for_speech:
                         if is_speech:
                             print("🗣️ Speech detected, recording...")
@@ -70,7 +79,6 @@ class VoiceAssistant:
                                 print("⏱️ Timeout waiting for speech")
                                 break
                     
-                    # User already speaking
                     elif started_speaking:
                         recorded_audio.append(audio_chunk)
                         
@@ -84,11 +92,9 @@ class VoiceAssistant:
                                 break
                                 
                 except:
-                    # If VAD error, just continue
                     if started_speaking:
                         recorded_audio.append(audio_chunk)
         
-        # Combine all chunks
         if recorded_audio:
             audio_data = np.concatenate(recorded_audio, axis=0)
             return audio_data.flatten()
@@ -98,6 +104,7 @@ class VoiceAssistant:
         """Main loop"""
         print("\n=== Voice Assistant Started ===")
         print("Listening for wake word 'Hey Jarvis'...")
+        print("Say 'stop', 'done', or 'berhenti' to cancel anytime")
         print("Press Ctrl+C to stop\n")
         
         try:
@@ -107,16 +114,29 @@ class VoiceAssistant:
                               callback=self.audio_callback):
                 
                 while True:
-                    # Get audio chunk
                     if not self.audio_queue.empty():
                         audio_chunk = self.audio_queue.get()
                         
-                        # Check for wake word (skip if currently speaking)
-                        if not self.is_speaking and self.wake_word_detector.detect(audio_chunk.flatten()):
+                        wake_detected = self.wake_word_detector.detect(audio_chunk.flatten())
+                        
+                        # Interrupt jika AI sedang berbicara
+                        if self.is_speaking and wake_detected:
+                            print("\n⚠️ Interrupt detected! Stopping speech...")
+                            self.tts.stop()
+                            self.is_speaking = False
+                            
+                            while not self.audio_queue.empty():
+                                self.audio_queue.get()
+                            
+                            time.sleep(0.5)
+                            print("\n✅ Ready for new command!\n")
+                            continue
+                        
+                        # Normal wake word detection
+                        if not self.is_speaking and wake_detected:
                             
                             print("\n🎤 Wake word detected!")
                             
-                            # Clear queue
                             while not self.audio_queue.empty():
                                 self.audio_queue.get()
                             
@@ -126,12 +146,16 @@ class VoiceAssistant:
                             audio = self.listen_for_speech(max_duration=10)
                             
                             if len(audio) > 0:
-                                # Convert to text
                                 print("⚙️ Processing speech...")
                                 text = self.stt.transcribe(audio, self.sample_rate)
                                 
                                 if text:
                                     print(f"💬 You: {text}")
+                                    
+                                    # Check untuk stop command
+                                    if self.is_stop_command(text):
+                                        print("🛑 Stop command detected. Returning to standby...\n")
+                                        continue
                                     
                                     # Generate response
                                     print("🤔 Thinking...")
@@ -141,7 +165,6 @@ class VoiceAssistant:
                                     # Speak response
                                     print("🔊 Speaking...")
                                     
-                                    # Clear queue before speaking
                                     while not self.audio_queue.empty():
                                         self.audio_queue.get()
                                     
@@ -149,7 +172,6 @@ class VoiceAssistant:
                                     self.tts.speak(response)
                                     self.is_speaking = False
                                     
-                                    # Clear queue after speaking
                                     time.sleep(0.5)
                                     while not self.audio_queue.empty():
                                         self.audio_queue.get()
