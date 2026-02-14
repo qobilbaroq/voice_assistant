@@ -14,20 +14,32 @@ class SpeechToText:
         )
         print("Whisper model loaded!")
         
-    def transcribe(self, audio_data, sample_rate=16000, language='id'):
-        """Convert audio to text"""
+    def transcribe(self, audio_data, sample_rate=16000, language=None):
+        """
+        Convert audio to text with auto language detection
+        
+        Args:
+            audio_data: Audio numpy array
+            sample_rate: Sample rate (default 16000)
+            language: Language code ('en', 'id', or None for auto-detect)
+        """
         try:
             audio_np = np.array(audio_data, dtype=np.float32)
 
-            # Beam size kecil = lebih cepat, kurang RAM
+            # Transcribe with language detection
             segments, info = self.model.transcribe(
                 audio_np, 
-                language=language,
-                beam_size=1,  # Default 5, kita pakai 1 = lebih ringan
-                vad_filter=True  # Filter noise otomatis
+                language=language,  # None = auto-detect
+                beam_size=1,  # Faster
+                vad_filter=True  # Filter noise
             )
 
             text = " ".join([segment.text for segment in segments]).strip()
+            
+            # Print detected language (for debugging)
+            if language is None and hasattr(info, 'language'):
+                print(f"Detected language: {info.language}")
+            
             return text
             
         except Exception as e:
